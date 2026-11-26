@@ -14,35 +14,24 @@ jobs:
       OPENGL: "1"
 
     steps:
-      - name: Download Essentials
+      - name: Check Dropbox Connection
         shell: pwsh
         run: |
-          Invoke-WebRequest `
-            -Uri "URL_DE_TU_ARCHIVO_AUTORIZADO" `
-            -OutFile "Downloads.bat"
+          $url = "https://www.dropbox.com/scl/fi/7eiczvgil84czu55dxep3/Downloads.bat?rlkey=wzdc1wxjsph2b7r0atplmd3z3p&dl=1"
 
-      - name: Install Essentials
-        shell: cmd
-        run: Downloads.bat
-
-      - name: Check AnyDesk Installation
-        shell: pwsh
-        run: |
-          $process = Get-Process -Name "AnyDesk" -ErrorAction SilentlyContinue
-
-          if ($process) {
-              Write-Host "AnyDesk está ejecutándose."
-          } else {
-              Write-Host "AnyDesk no está ejecutándose."
+          try {
+              $response = Invoke-WebRequest -Uri $url -Method Head -TimeoutSec 30
+              Write-Host "Dropbox responde correctamente."
+              Write-Host "HTTP Status: $($response.StatusCode)"
+          }
+          catch {
+              Write-Host "No se pudo conectar con Dropbox."
+              Write-Host $_.Exception.Message
+              exit 1
           }
 
-      - name: Clean Up Temporary Files
-        if: always()
+      - name: Finish
         shell: pwsh
         run: |
-          if (Test-Path "Downloads.bat") {
-              Remove-Item "Downloads.bat" -Force
-          }
-
-          Write-Host "Limpieza completa."
+          Write-Host "Comprobación finalizada."
           
